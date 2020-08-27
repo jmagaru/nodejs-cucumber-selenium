@@ -1,3 +1,5 @@
+const fsp = require("fs").promises;
+const util = require("util");
 const {
   Before,
   Given,
@@ -40,13 +42,16 @@ Then("User successfully landed on the page", async function () {
 Then("Page element {string} is displayed", async function (element) {
   await this.driver.wait(until.elementLocated(By.id(element)), 10000);
   await this.driver.findElement(By.id(element));
-  await this.driver.takeScreenshot(true);
 });
 
 After(async function (testCase) {
   if (testCase.result.status === Status.FAILED) {
     console.log("================FAILED=============");
-    this.driver.takeScreenshot(true);
+    let world = this;
+
+    await this.driver.takeScreenshot(true).then(function (buffer) {
+      return world.attach(buffer, "image/png");
+    });
   }
   if (testCase.result.status === Status.PASSED) {
     console.log("================PASSED=============");
